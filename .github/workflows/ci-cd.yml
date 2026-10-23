@@ -1,4 +1,4 @@
-name: CI and deployment
+name: Tekshiruv va joylashtirish
 
 on:
   pull_request:
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install SSH key
+      - name: SSH kalitini sozlash
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
@@ -58,7 +58,7 @@ jobs:
           chmod 600 ~/.ssh/ecommerce_ec2
           printf '%s\n' "$EC2_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
-      - name: Copy application
+      - name: Ilova fayllarini serverga ko‘chirish
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -66,7 +66,7 @@ jobs:
         run: |
           rsync -az --exclude='.env' --exclude='.venv' --exclude='__pycache__' \
             -e "ssh -i ~/.ssh/ecommerce_ec2" ./ "$EC2_USER@$EC2_HOST:$DEPLOY_PATH/"
-      - name: Migrate, restart, and verify health
+      - name: Migratsiya, xizmatni qayta ishga tushirish va holatni tekshirish
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}

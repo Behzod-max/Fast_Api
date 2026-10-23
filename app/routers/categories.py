@@ -10,7 +10,7 @@ from app.models.product import Product
 from app.models.user import User
 from app.schemas.category import CategoryCreate, CategoryResponse
 
-router = APIRouter(prefix="/categories", tags=["Categories"])
+router = APIRouter(prefix="/categories", tags=["Kategoriyalar"])
 
 
 @router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
@@ -19,6 +19,7 @@ def create_category(
     db: Session = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> Category:
+    """Yangi kategoriya yaratadi; bu amal administrator uchun."""
     category = Category(**payload.model_dump())
     db.add(category)
     try:
@@ -26,7 +27,7 @@ def create_category(
     except IntegrityError:
         db.rollback()
         raise HTTPException(
-            status_code=409, detail="Category name already exists"
+            status_code=409, detail="Bunday kategoriya nomi allaqachon mavjud"
         ) from None
     db.refresh(category)
     return category
@@ -36,8 +37,9 @@ def create_category(
 def list_categories(
     offset: int = 0, limit: int = 50, db: Session = Depends(get_db)
 ) -> list[Category]:
+    """Kategoriyalarni sahifalab ro‘yxatlaydi."""
     if offset < 0 or not 1 <= limit <= 100:
-        raise HTTPException(status_code=422, detail="Invalid pagination values")
+        raise HTTPException(status_code=422, detail="Sahifalash qiymatlari noto‘g‘ri")
     return list(
         db.scalars(select(Category).order_by(Category.id).offset(offset).limit(limit))
     )
@@ -49,13 +51,17 @@ def delete_category(
     db: Session = Depends(get_db),
     _admin: User = Depends(require_admin),
 ) -> None:
+    """Mahsuloti yo‘q kategoriyani o‘chiradi."""
     category = db.get(Category, category_id)
     if category is None:
-        raise HTTPException(status_code=404, detail="Category not found")
+        raise HTTPException(status_code=404, detail="Kategoriya topilmadi")
     if (
         db.scalar(select(Product.id).where(Product.category_id == category_id).limit(1))
         is not None
     ):
-        raise HTTPException(status_code=409, detail="Category still contains products")
+        raise HTTPException(
+            status_code=409,
+            detail="Kategoriyada mahsulotlar bor, uni o‘chirib bo‘lmaydi",
+        )
     db.delete(category)
     db.commit()

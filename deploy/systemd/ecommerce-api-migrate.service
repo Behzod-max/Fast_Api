@@ -1,5 +1,5 @@
 [Unit]
-Description=Apply e-commerce database migrations
+Description=E-commerce bazasi migratsiyalarini qo‘llash
 After=network.target
 
 [Service]

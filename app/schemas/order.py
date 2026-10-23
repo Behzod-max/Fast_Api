@@ -5,6 +5,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class OrderItemRead(BaseModel):
+    """Buyurtmadagi mahsulotning xarid paytida saqlangan narxi."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -15,6 +17,8 @@ class OrderItemRead(BaseModel):
 
 
 class OrderRead(BaseModel):
+    """Buyurtma sarlavhasi va uning tarixiy qatorlari."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int

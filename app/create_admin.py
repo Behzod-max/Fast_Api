@@ -11,13 +11,13 @@ from app.models.user import User
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Create the first administrator account."
+        description="Birinchi administrator hisobini xavfsiz yaratish."
     )
     parser.add_argument("--email", required=True)
     args = parser.parse_args()
-    password = getpass("Admin password (at least 8 characters): ")
+    password = getpass("Administrator paroli (kamida 8 belgi): ")
     if len(password) < 8:
-        parser.error("Password must contain at least 8 characters")
+        parser.error("Parol kamida 8 ta belgidan iborat bo‘lishi kerak")
 
     with SessionLocal() as db:
         try:
@@ -25,14 +25,14 @@ def main() -> None:
                 TypeAdapter(EmailStr).validate_python(args.email.strip())
             ).lower()
         except ValidationError:
-            parser.error("Email address is invalid")
+            parser.error("Elektron pochta manzili noto‘g‘ri")
         if db.scalar(select(User).where(User.email == email)) is not None:
             parser.error(
-                "That email already exists; this command does not promote existing accounts"
+                "Bu elektron pochta allaqachon mavjud; buyruq mavjud hisobni administratorga ko‘tarmaydi"
             )
         db.add(User(email=email, password_hash=hash_password(password), role="admin"))
         db.commit()
-    print(f"Administrator created: {email}")
+    print(f"Administrator yaratildi: {email}")
 
 
 if __name__ == "__main__":

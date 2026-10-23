@@ -14,9 +14,10 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
+    """JWT tokenni tekshirib, unga tegishli foydalanuvchini qaytaradi."""
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or expired authentication token",
+        detail="Kirish tokeni noto‘g‘ri yoki muddati tugagan",
         headers={"WWW-Authenticate": "Bearer"},
     )
     if credentials is None:
@@ -39,8 +40,10 @@ def get_current_user(
 
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
+    """Faqat administratorlarga ruxsat beradi."""
     if user.role != "admin":
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu amal uchun administrator huquqi kerak",
         )
     return user

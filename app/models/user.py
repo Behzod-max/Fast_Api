@@ -5,6 +5,8 @@ from app.db.base import Base
 
 
 class User(Base):
+    """Foydalanuvchi hisobi, parol xeshi va server belgilaydigan rol."""
+
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint("role IN ('customer', 'admin')", name="ck_users_role"),

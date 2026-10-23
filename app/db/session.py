@@ -13,6 +13,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def get_db():
+    """So‘rov uchun DB sessiyasini ochib, yakunda albatta yopadi."""
     db: Session = SessionLocal()
     try:
         yield db

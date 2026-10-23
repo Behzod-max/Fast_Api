@@ -1,8 +1,8 @@
-"""Add category descriptions.
+"""Kategoriyaga tavsif ustunini qo‘shadi.
 
 Revision ID: 20261023_0002
-Revises: 20261023_0001
-Create Date: 2026-10-23
+Oldingi migratsiya: 20261023_0001
+Yaratilgan sana: 2026-10-23
 """
 
 from collections.abc import Sequence
@@ -18,6 +18,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    """Kategoriya tavsifini qo‘shadi va nom uzunligini yangilaydi."""
     with op.batch_alter_table("categories") as batch_op:
         batch_op.add_column(sa.Column("description", sa.Text(), nullable=True))
         batch_op.alter_column(
@@ -29,6 +30,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """O‘zgarishlarni orqaga qaytaradi."""
     with op.batch_alter_table("categories") as batch_op:
         batch_op.drop_column("description")
         batch_op.alter_column(

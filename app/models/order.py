@@ -8,6 +8,8 @@ from app.db.base import Base
 
 
 class Order(Base):
+    """Xaridor buyurtmasi va server hisoblagan umumiy summa."""
+
     __tablename__ = "orders"
     __table_args__ = (
         CheckConstraint("total_amount > 0", name="ck_orders_total_positive"),
@@ -28,6 +30,8 @@ class Order(Base):
 
 
 class OrderItem(Base):
+    """Buyurtma qatori; mahsulot nomi va xariddagi narx nusxasi tarixni saqlaydi."""
+
     __tablename__ = "order_items"
     __table_args__ = (
         CheckConstraint("quantity > 0", name="ck_order_items_quantity_positive"),

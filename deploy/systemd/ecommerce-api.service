@@ -1,5 +1,5 @@
 [Unit]
-Description=E-commerce FastAPI application
+Description=E-commerce FastAPI ilovasi
 After=network.target
 
 [Service]

@@ -5,6 +5,8 @@ from app.db.base import Base
 
 
 class CartItem(Base):
+    """Foydalanuvchi savatidagi mahsulot va uning musbat miqdori."""
+
     __tablename__ = "cart_items"
     __table_args__ = (
         UniqueConstraint("user_id", "product_id", name="uq_cart_items_user_product"),

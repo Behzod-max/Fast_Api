@@ -18,13 +18,14 @@ from app.services.commerce import (
     update_cart_item as update_cart_item_service,
 )
 
-router = APIRouter(prefix="/cart", tags=["Cart"])
+router = APIRouter(prefix="/cart", tags=["Savat"])
 
 
 @router.get("", response_model=CartRead)
 def read_cart(
     db: Session = Depends(get_db), user: User = Depends(get_current_user)
 ) -> CartRead:
+    """Joriy foydalanuvchining savati va umumiy summasini ko‘rsatadi."""
     return get_cart(db, user.id)
 
 
@@ -34,6 +35,7 @@ def add_to_cart(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> CartRead:
+    """Mahsulotni foydalanuvchining shaxsiy savatiga qo‘shadi."""
     return add_cart_item_service(db, user.id, payload.product_id, payload.quantity)
 
 
@@ -44,6 +46,7 @@ def update_cart_item(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> CartRead:
+    """Savatdagi mahsulot miqdorini o‘zgartiradi."""
     return update_cart_item_service(db, user.id, product_id, payload.quantity)
 
 
@@ -53,4 +56,5 @@ def remove_cart_item(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> None:
+    """Mahsulotni faqat joriy foydalanuvchining savatidan olib tashlaydi."""
     remove_cart_item_service(db, user.id, product_id)

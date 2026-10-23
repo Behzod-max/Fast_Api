@@ -9,13 +9,14 @@ from app.models.user import User
 from app.schemas.order import OrderRead
 from app.services.commerce import checkout
 
-router = APIRouter(prefix="/orders", tags=["Orders"])
+router = APIRouter(prefix="/orders", tags=["Buyurtmalar"])
 
 
 @router.post("", response_model=OrderRead, status_code=status.HTTP_201_CREATED)
 def create_order(
     db: Session = Depends(get_db), user: User = Depends(get_current_user)
 ) -> Order:
+    """Savatni tekshirib, qoldiqni kamaytirish bilan bir tranzaksiyada buyurtma beradi."""
     return checkout(db, user.id)
 
 
@@ -26,6 +27,7 @@ def list_orders(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> list[Order]:
+    """Faqat token egasining buyurtmalarini sahifalab qaytaradi."""
     orders = db.scalars(
         select(Order)
         .options(selectinload(Order.items))
@@ -43,11 +45,12 @@ def get_order(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Order:
+    """Buyurtma boshqa foydalanuvchiga tegishli bo‘lsa, uni mavjud emas deb qaytaradi."""
     order = db.scalar(
         select(Order)
         .options(selectinload(Order.items))
         .where(Order.id == order_id, Order.user_id == user.id)
     )
     if order is None:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(status_code=404, detail="Buyurtma topilmadi")
     return order

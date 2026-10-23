@@ -13,6 +13,7 @@ from app.schemas.product import ProductRead
 
 
 def get_cart(db: Session, user_id: int) -> CartRead:
+    """Savat qatorlari va summasini serverda hisoblaydi."""
     rows = db.execute(
         select(CartItem, Product)
         .join(Product, Product.id == CartItem.product_id)
@@ -37,10 +38,11 @@ def get_cart(db: Session, user_id: int) -> CartRead:
 def add_cart_item(
     db: Session, user_id: int, product_id: int, quantity: int
 ) -> CartRead:
+    """Foydalanuvchi savatini qulflab, miqdorni ombordagi qoldiq bilan solishtiradi."""
     db.scalar(select(User).where(User.id == user_id).with_for_update())
     product = db.get(Product, product_id)
     if product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     item = db.scalar(
         select(CartItem).where(
             CartItem.user_id == user_id, CartItem.product_id == product_id
@@ -49,7 +51,8 @@ def add_cart_item(
     new_quantity = quantity + (item.quantity if item else 0)
     if new_quantity > product.stock:
         raise HTTPException(
-            status_code=409, detail="Requested quantity exceeds available stock"
+            status_code=409,
+            detail="So‘ralgan miqdor ombordagi qoldiqdan oshib ketdi",
         )
     if item is None:
         db.add(CartItem(user_id=user_id, product_id=product_id, quantity=quantity))
@@ -62,19 +65,21 @@ def add_cart_item(
 def update_cart_item(
     db: Session, user_id: int, product_id: int, quantity: int
 ) -> CartRead:
+    """Savat qatorini qulflab, miqdorni zaxiradan oshirmasdan yangilaydi."""
     item = db.scalar(
         select(CartItem)
         .where(CartItem.user_id == user_id, CartItem.product_id == product_id)
         .with_for_update()
     )
     if item is None:
-        raise HTTPException(status_code=404, detail="Cart item not found")
+        raise HTTPException(status_code=404, detail="Savatda bunday mahsulot yo‘q")
     product = db.get(Product, product_id)
     if product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     if quantity > product.stock:
         raise HTTPException(
-            status_code=409, detail="Requested quantity exceeds available stock"
+            status_code=409,
+            detail="So‘ralgan miqdor ombordagi qoldiqdan oshib ketdi",
         )
     item.quantity = quantity
     db.commit()
@@ -82,18 +87,20 @@ def update_cart_item(
 
 
 def remove_cart_item(db: Session, user_id: int, product_id: int) -> None:
+    """Savat qatorini egasini tekshirib o‘chiradi."""
     item = db.scalar(
         select(CartItem)
         .where(CartItem.user_id == user_id, CartItem.product_id == product_id)
         .with_for_update()
     )
     if item is None:
-        raise HTTPException(status_code=404, detail="Cart item not found")
+        raise HTTPException(status_code=404, detail="Savatda bunday mahsulot yo‘q")
     db.delete(item)
     db.commit()
 
 
 def checkout(db: Session, user_id: int) -> Order:
+    """Buyurtma, narx nusxasi, zaxira va savatni bitta tranzaksiyada boshqaradi."""
     cart_rows = list(
         db.execute(
             select(CartItem, Product)
@@ -105,7 +112,7 @@ def checkout(db: Session, user_id: int) -> Order:
     )
     if not cart_rows:
         raise HTTPException(
-            status_code=409, detail="Cannot create an order from an empty cart"
+            status_code=409, detail="Bo‘sh savatdan buyurtma yaratib bo‘lmaydi"
         )
 
     total = sum(
@@ -126,7 +133,7 @@ def checkout(db: Session, user_id: int) -> Order:
             db.rollback()
             raise HTTPException(
                 status_code=409,
-                detail=f"Insufficient stock for product {product.id}",
+                detail=f"{product.id}-mahsulot uchun omborda yetarli qoldiq yo‘q",
             )
         db.add(
             OrderItem(
@@ -145,5 +152,5 @@ def checkout(db: Session, user_id: int) -> Order:
         select(Order).options(selectinload(Order.items)).where(Order.id == order_id)
     )
     if completed_order is None:
-        raise RuntimeError("Committed order could not be loaded")
+        raise RuntimeError("Saqlangan buyurtmani qayta o‘qib bo‘lmadi")
     return completed_order

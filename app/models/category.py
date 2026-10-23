@@ -5,6 +5,8 @@ from app.db.base import Base
 
 
 class Category(Base):
+    """Mahsulotlarni guruhlash uchun katalog kategoriyasi."""
+
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(

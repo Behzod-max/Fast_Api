@@ -7,6 +7,8 @@ from app.db.base import Base
 
 
 class Product(Base):
+    """Katalog mahsuloti; narx musbat, ombor qoldig‘i esa manfiy bo‘lmaydi."""
+
     __tablename__ = "products"
     __table_args__ = (
         CheckConstraint("price > 0", name="ck_products_price_positive"),
