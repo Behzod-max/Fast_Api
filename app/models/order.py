@@ -4,10 +4,10 @@ from decimal import Decimal
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, Numeric, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
+from app.db.base import ModelAsosi
 
 
-class Order(Base):
+class Buyurtma(ModelAsosi):
     """Xaridor buyurtmasi va server hisoblagan umumiy summa."""
 
     __tablename__ = "orders"
@@ -25,11 +25,11 @@ class Order(Base):
     )
 
     items = relationship(
-        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+        "BuyurtmaMahsuloti", back_populates="order", cascade="all, delete-orphan"
     )
 
 
-class OrderItem(Base):
+class BuyurtmaMahsuloti(ModelAsosi):
     """Buyurtma qatori; mahsulot nomi va xariddagi narx nusxasi tarixni saqlaydi."""
 
     __tablename__ = "order_items"
@@ -49,4 +49,4 @@ class OrderItem(Base):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
-    order = relationship("Order", back_populates="items")
+    order = relationship("Buyurtma", back_populates="items")

@@ -1,6 +1,6 @@
 # E-commerce API
 
-FastAPI asosida tuzilgan internet-do‘kon backend’i. API’ni `/docs` manzilidagi Swagger orqali tekshirish mumkin. Pul qiymatlari `Decimal/Numeric` bilan saqlanadi; haqiqiy to‘lovlarda ishlatishdan oldin valyuta va to‘lov provayderini belgilang. Dasturlash tili va framework talab qiladigan nomlar, ma’lumotlar bazasi ustunlari, JSON maydonlari, muhit o‘zgaruvchilari hamda topshiriqdagi API yo‘llari integratsiya buzilmasligi uchun standart holatda qoldirilgan.
+FastAPI asosida tuzilgan internet-do‘kon backend’i. API’ni `/docs` manzilidagi Swagger orqali tekshirish mumkin. Pul qiymatlari `Decimal/Numeric` bilan saqlanadi; haqiqiy to‘lovlarda ishlatishdan oldin valyuta va to‘lov provayderini belgilang. Ilova ichidagi klass nomlari o‘zbekchalashtirilgan; Python va framework’ning zarur nomlari, ma’lumotlar bazasi ustunlari, JSON maydonlari, muhit o‘zgaruvchilari hamda API yo‘llari integratsiya buzilmasligi uchun saqlangan.
 
 ## Imkoniyatlar va ruxsatlar
 

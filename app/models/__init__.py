@@ -1,7 +1,7 @@
-from app.models.cart_item import CartItem
-from app.models.category import Category
-from app.models.order import Order, OrderItem
-from app.models.product import Product
-from app.models.user import User
+from app.models.cart_item import SavatMahsuloti
+from app.models.category import Kategoriya
+from app.models.order import Buyurtma, BuyurtmaMahsuloti
+from app.models.product import Mahsulot
+from app.models.user import Foydalanuvchi
 
-__all__ = ["CartItem", "Category", "Order", "OrderItem", "Product", "User"]
+__all__ = ["Buyurtma", "BuyurtmaMahsuloti", "Foydalanuvchi", "Kategoriya", "Mahsulot", "SavatMahsuloti"]

@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.db.base import Base
+from app.db.base import ModelAsosi
 from app.db.session import get_db
 from app.main import app
 from app.models import *
@@ -27,9 +27,9 @@ def test_engine():
         )
     else:
         engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True)
-    Base.metadata.create_all(bind=engine)
+    ModelAsosi.metadata.create_all(bind=engine)
     yield engine
-    Base.metadata.drop_all(bind=engine)
+    ModelAsosi.metadata.drop_all(bind=engine)
     engine.dispose()
 
 
@@ -68,12 +68,12 @@ def customer_token(client):
 def admin_token(client):
     from app.core.security import hash_password
     from app.db.session import get_db
-    from app.models.user import User
+    from app.models.user import Foydalanuvchi
 
     generator = app.dependency_overrides[get_db]()
     db = next(generator)
     db.add(
-        User(
+        Foydalanuvchi(
             email="admin@example.com",
             password_hash=hash_password("admin-pass-123"),
             role="admin",

@@ -6,38 +6,38 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.dependencies.auth import require_admin
-from app.models.cart_item import CartItem
-from app.models.category import Category
-from app.models.order import OrderItem
-from app.models.product import Product
-from app.models.user import User
+from app.models.cart_item import SavatMahsuloti
+from app.models.category import Kategoriya
+from app.models.order import BuyurtmaMahsuloti
+from app.models.product import Mahsulot
+from app.models.user import Foydalanuvchi
 from app.schemas.product import (
-    ProductCreate,
-    ProductRead,
-    ProductSalesRead,
-    ProductUpdate,
+    MahsulotJavobi,
+    MahsulotSavdosiJavobi,
+    MahsulotYangilash,
+    MahsulotYaratish,
 )
 
 router = APIRouter(prefix="/products", tags=["Mahsulotlar"])
 
 
-@router.post("", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=MahsulotJavobi, status_code=status.HTTP_201_CREATED)
 def create_product(
-    payload: ProductCreate,
+    payload: MahsulotYaratish,
     db: Session = Depends(get_db),
-    _admin: User = Depends(require_admin),
-) -> Product:
+    _admin: Foydalanuvchi = Depends(require_admin),
+) -> Mahsulot:
     """Yangi mahsulot yaratadi; kategoriya mavjudligi tekshiriladi."""
-    if db.get(Category, payload.category_id) is None:
+    if db.get(Kategoriya, payload.category_id) is None:
         raise HTTPException(status_code=404, detail="Kategoriya topilmadi")
-    product = Product(**payload.model_dump())
+    product = Mahsulot(**payload.model_dump())
     db.add(product)
     db.commit()
     db.refresh(product)
     return product
 
 
-@router.get("", response_model=list[ProductRead])
+@router.get("", response_model=list[MahsulotJavobi])
 def list_products(
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
@@ -46,41 +46,41 @@ def list_products(
     min_price: Decimal | None = Query(default=None, gt=0),
     max_price: Decimal | None = Query(default=None, gt=0),
     db: Session = Depends(get_db),
-) -> list[Product]:
+) -> list[Mahsulot]:
     """Mahsulotlarni nom, kategoriya va narx oralig‘i bo‘yicha sahifalab topadi."""
     if min_price is not None and max_price is not None and min_price > max_price:
         raise HTTPException(
             status_code=422,
             detail="Eng past narx eng yuqori narxdan katta bo‘lishi mumkin emas",
         )
-    query = select(Product)
+    query = select(Mahsulot)
     if search:
-        query = query.where(Product.name.ilike(f"%{search.strip()}%"))
+        query = query.where(Mahsulot.name.ilike(f"%{search.strip()}%"))
     if category_id is not None:
-        query = query.where(Product.category_id == category_id)
+        query = query.where(Mahsulot.category_id == category_id)
     if min_price is not None:
-        query = query.where(Product.price >= min_price)
+        query = query.where(Mahsulot.price >= min_price)
     if max_price is not None:
-        query = query.where(Product.price <= max_price)
-    return list(db.scalars(query.order_by(Product.id).offset(offset).limit(limit)))
+        query = query.where(Mahsulot.price <= max_price)
+    return list(db.scalars(query.order_by(Mahsulot.id).offset(offset).limit(limit)))
 
 
-@router.get("/best-sellers", response_model=list[ProductSalesRead])
+@router.get("/best-sellers", response_model=list[MahsulotSavdosiJavobi])
 def best_sellers(
     limit: int = Query(default=10, ge=1, le=100), db: Session = Depends(get_db)
-) -> list[ProductSalesRead]:
+) -> list[MahsulotSavdosiJavobi]:
     """Faqat muvaffaqiyatli buyurtmalardagi sotuvlar bo‘yicha reytingni qaytaradi."""
     rows = db.execute(
-        select(Product, func.sum(OrderItem.quantity).label("sold_units"))
-        .join(OrderItem, OrderItem.product_id == Product.id)
-        .group_by(Product.id)
-        .order_by(func.sum(OrderItem.quantity).desc(), Product.id)
+        select(Mahsulot, func.sum(BuyurtmaMahsuloti.quantity).label("sold_units"))
+        .join(BuyurtmaMahsuloti, BuyurtmaMahsuloti.product_id == Mahsulot.id)
+        .group_by(Mahsulot.id)
+        .order_by(func.sum(BuyurtmaMahsuloti.quantity).desc(), Mahsulot.id)
         .limit(limit)
     )
     return [
-        ProductSalesRead.model_validate(
+        MahsulotSavdosiJavobi.model_validate(
             {
-                **ProductRead.model_validate(product).model_dump(),
+                **MahsulotJavobi.model_validate(product).model_dump(),
                 "sold_units": sold_units,
             }
         )
@@ -88,28 +88,28 @@ def best_sellers(
     ]
 
 
-@router.get("/{product_id}", response_model=ProductRead)
-def get_product(product_id: int, db: Session = Depends(get_db)) -> Product:
+@router.get("/{product_id}", response_model=MahsulotJavobi)
+def get_product(product_id: int, db: Session = Depends(get_db)) -> Mahsulot:
     """Bitta mahsulot tafsilotlarini qaytaradi."""
-    product = db.get(Product, product_id)
+    product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     return product
 
 
-@router.patch("/{product_id}", response_model=ProductRead)
+@router.patch("/{product_id}", response_model=MahsulotJavobi)
 def update_product(
     product_id: int,
-    payload: ProductUpdate,
+    payload: MahsulotYangilash,
     db: Session = Depends(get_db),
-    _admin: User = Depends(require_admin),
-) -> Product:
+    _admin: Foydalanuvchi = Depends(require_admin),
+) -> Mahsulot:
     """Mahsulot maydonlarini yangilaydi; faqat administratorga ruxsat beriladi."""
-    product = db.get(Product, product_id)
+    product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     changes = payload.model_dump(exclude_unset=True)
-    if "category_id" in changes and db.get(Category, changes["category_id"]) is None:
+    if "category_id" in changes and db.get(Kategoriya, changes["category_id"]) is None:
         raise HTTPException(status_code=404, detail="Kategoriya topilmadi")
     for key, value in changes.items():
         setattr(product, key, value)
@@ -122,15 +122,15 @@ def update_product(
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
-    _admin: User = Depends(require_admin),
+    _admin: Foydalanuvchi = Depends(require_admin),
 ) -> None:
     """Buyurtma tarixini saqlab, faqat tarixga kirmagan mahsulotni o‘chiradi."""
-    product = db.get(Product, product_id)
+    product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     if (
         db.scalar(
-            select(OrderItem.id).where(OrderItem.product_id == product_id).limit(1)
+            select(BuyurtmaMahsuloti.id).where(BuyurtmaMahsuloti.product_id == product_id).limit(1)
         )
         is not None
     ):
@@ -138,7 +138,7 @@ def delete_product(
             status_code=409,
             detail="Mahsulot buyurtma tarixida bor, uni o‘chirib bo‘lmaydi",
         )
-    db.query(CartItem).filter(CartItem.product_id == product_id).delete(
+    db.query(SavatMahsuloti).filter(SavatMahsuloti.product_id == product_id).delete(
         synchronize_session=False
     )
     db.delete(product)

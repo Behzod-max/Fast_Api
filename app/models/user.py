@@ -1,10 +1,10 @@
 from sqlalchemy import CheckConstraint, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base
+from app.db.base import ModelAsosi
 
 
-class User(Base):
+class Foydalanuvchi(ModelAsosi):
     """Foydalanuvchi hisobi, parol xeshi va server belgilaydigan rol."""
 
     __tablename__ = "users"

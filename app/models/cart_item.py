@@ -1,10 +1,10 @@
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base
+from app.db.base import ModelAsosi
 
 
-class CartItem(Base):
+class SavatMahsuloti(ModelAsosi):
     """Foydalanuvchi savatidagi mahsulot va uning musbat miqdori."""
 
     __tablename__ = "cart_items"

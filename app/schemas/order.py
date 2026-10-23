@@ -4,7 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict
 
 
-class OrderItemRead(BaseModel):
+class BuyurtmaMahsulotiJavobi(BaseModel):
     """Buyurtmadagi mahsulotning xarid paytida saqlangan narxi."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -16,7 +16,7 @@ class OrderItemRead(BaseModel):
     unit_price: Decimal
 
 
-class OrderRead(BaseModel):
+class BuyurtmaJavobi(BaseModel):
     """Buyurtma sarlavhasi va uning tarixiy qatorlari."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -24,4 +24,4 @@ class OrderRead(BaseModel):
     id: int
     total_amount: Decimal
     created_at: datetime
-    items: list[OrderItemRead]
+    items: list[BuyurtmaMahsulotiJavobi]

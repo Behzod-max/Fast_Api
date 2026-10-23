@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class IlovaSozlamalari(BaseSettings):
     """Ilova sozlamalarini muhit o‘zgaruvchilari va `.env` faylidan o‘qiydi."""
 
     APP_NAME: str = "E-commerce API"
@@ -21,11 +21,11 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+settings = IlovaSozlamalari()
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class IlovaSozlamalari(BaseSettings):
     APP_NAME: str = "E-commerce API"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
@@ -44,4 +44,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+settings = IlovaSozlamalari()

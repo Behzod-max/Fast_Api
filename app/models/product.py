@@ -3,10 +3,10 @@ from decimal import Decimal
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
+from app.db.base import ModelAsosi
 
 
-class Product(Base):
+class Mahsulot(ModelAsosi):
     """Katalog mahsuloti; narx musbat, ombor qoldig‘i esa manfiy bo‘lmaydi."""
 
     __tablename__ = "products"
@@ -24,4 +24,4 @@ class Product(Base):
         ForeignKey("categories.id", ondelete="RESTRICT"), index=True, nullable=False
     )
 
-    category = relationship("Category", back_populates="products")
+    category = relationship("Kategoriya", back_populates="products")

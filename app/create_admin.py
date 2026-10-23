@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.core.security import hash_password
 from app.db.session import SessionLocal
-from app.models.user import User
+from app.models.user import Foydalanuvchi
 
 
 def main() -> None:
@@ -26,11 +26,11 @@ def main() -> None:
             ).lower()
         except ValidationError:
             parser.error("Elektron pochta manzili noto‘g‘ri")
-        if db.scalar(select(User).where(User.email == email)) is not None:
+        if db.scalar(select(Foydalanuvchi).where(Foydalanuvchi.email == email)) is not None:
             parser.error(
                 "Bu elektron pochta allaqachon mavjud; buyruq mavjud hisobni administratorga ko‘tarmaydi"
             )
-        db.add(User(email=email, password_hash=hash_password(password), role="admin"))
+        db.add(Foydalanuvchi(email=email, password_hash=hash_password(password), role="admin"))
         db.commit()
     print(f"Administrator yaratildi: {email}")
 

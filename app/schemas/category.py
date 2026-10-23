@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class CategoryCreate(BaseModel):
+class KategoriyaYaratish(BaseModel):
     """Yangi kategoriya uchun tekshiriladigan ma’lumotlar."""
 
     name: str = Field(min_length=2, max_length=100)
@@ -18,7 +18,7 @@ class CategoryCreate(BaseModel):
         return value
 
 
-class CategoryUpdate(BaseModel):
+class KategoriyaYangilash(BaseModel):
     """Kategoriya nomi yoki tavsifini qisman yangilash maydonlari."""
 
     name: str | None = Field(default=None, min_length=2, max_length=100)
@@ -36,7 +36,7 @@ class CategoryUpdate(BaseModel):
         return value
 
 
-class CategoryResponse(BaseModel):
+class KategoriyaJavobi(BaseModel):
     """API javobiga chiqariladigan kategoriya ma’lumotlari."""
 
     id: int

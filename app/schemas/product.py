@@ -3,7 +3,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
-class ProductCreate(BaseModel):
+class MahsulotYaratish(BaseModel):
     """Mahsulot yaratish maydonlari va narx/qoldiq cheklovlari."""
 
     name: str = Field(min_length=1, max_length=200)
@@ -21,7 +21,7 @@ class ProductCreate(BaseModel):
         return value
 
 
-class ProductUpdate(BaseModel):
+class MahsulotYangilash(BaseModel):
     """Mahsulotni qisman yangilash; majburiy ustunlarni null qilish taqiqlanadi."""
 
     name: str | None = Field(default=None, min_length=1, max_length=200)
@@ -42,7 +42,7 @@ class ProductUpdate(BaseModel):
         return self
 
 
-class ProductRead(BaseModel):
+class MahsulotJavobi(BaseModel):
     """Mahsulot uchun ommaviy javob sxemasi."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -55,7 +55,7 @@ class ProductRead(BaseModel):
     category_id: int
 
 
-class ProductSalesRead(ProductRead):
+class MahsulotSavdosiJavobi(MahsulotJavobi):
     """Mahsulot va muvaffaqiyatli buyurtmalardagi sotuv miqdori."""
 
     sold_units: int

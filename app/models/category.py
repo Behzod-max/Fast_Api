@@ -1,10 +1,10 @@
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
+from app.db.base import ModelAsosi
 
 
-class Category(Base):
+class Kategoriya(ModelAsosi):
     """Mahsulotlarni guruhlash uchun katalog kategoriyasi."""
 
     __tablename__ = "categories"
@@ -24,4 +24,4 @@ class Category(Base):
         nullable=True,
     )
 
-    products = relationship("Product", back_populates="category")
+    products = relationship("Mahsulot", back_populates="category")

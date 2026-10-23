@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import User
+from app.models.user import Foydalanuvchi
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -13,7 +13,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
-) -> User:
+) -> Foydalanuvchi:
     """JWT tokenni tekshirib, unga tegishli foydalanuvchini qaytaradi."""
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -33,13 +33,13 @@ def get_current_user(
     except (jwt.InvalidTokenError, TypeError, ValueError):
         raise unauthorized from None
 
-    user = db.get(User, user_id)
+    user = db.get(Foydalanuvchi, user_id)
     if user is None:
         raise unauthorized
     return user
 
 
-def require_admin(user: User = Depends(get_current_user)) -> User:
+def require_admin(user: Foydalanuvchi = Depends(get_current_user)) -> Foydalanuvchi:
     """Faqat administratorlarga ruxsat beradi."""
     if user.role != "admin":
         raise HTTPException(

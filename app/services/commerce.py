@@ -4,48 +4,48 @@ from fastapi import HTTPException
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session, selectinload
 
-from app.models.cart_item import CartItem
-from app.models.order import Order, OrderItem
-from app.models.product import Product
-from app.models.user import User
-from app.schemas.cart import CartLine, CartRead
-from app.schemas.product import ProductRead
+from app.models.cart_item import SavatMahsuloti
+from app.models.order import Buyurtma, BuyurtmaMahsuloti
+from app.models.product import Mahsulot
+from app.models.user import Foydalanuvchi
+from app.schemas.cart import SavatJavobi, SavatQatori
+from app.schemas.product import MahsulotJavobi
 
 
-def get_cart(db: Session, user_id: int) -> CartRead:
+def get_cart(db: Session, user_id: int) -> SavatJavobi:
     """Savat qatorlari va summasini serverda hisoblaydi."""
     rows = db.execute(
-        select(CartItem, Product)
-        .join(Product, Product.id == CartItem.product_id)
-        .where(CartItem.user_id == user_id)
-        .order_by(CartItem.id)
+        select(SavatMahsuloti, Mahsulot)
+        .join(Mahsulot, Mahsulot.id == SavatMahsuloti.product_id)
+        .where(SavatMahsuloti.user_id == user_id)
+        .order_by(SavatMahsuloti.id)
     )
-    lines: list[CartLine] = []
+    lines: list[SavatQatori] = []
     total = Decimal("0.00")
     for item, product in rows:
         line_total = product.price * item.quantity
         total += line_total
         lines.append(
-            CartLine(
-                product=ProductRead.model_validate(product),
+            SavatQatori(
+                product=MahsulotJavobi.model_validate(product),
                 quantity=item.quantity,
                 line_total=line_total,
             )
         )
-    return CartRead(items=lines, total_amount=total)
+    return SavatJavobi(items=lines, total_amount=total)
 
 
 def add_cart_item(
     db: Session, user_id: int, product_id: int, quantity: int
-) -> CartRead:
+) -> SavatJavobi:
     """Foydalanuvchi savatini qulflab, miqdorni ombordagi qoldiq bilan solishtiradi."""
-    db.scalar(select(User).where(User.id == user_id).with_for_update())
-    product = db.get(Product, product_id)
+    db.scalar(select(Foydalanuvchi).where(Foydalanuvchi.id == user_id).with_for_update())
+    product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     item = db.scalar(
-        select(CartItem).where(
-            CartItem.user_id == user_id, CartItem.product_id == product_id
+        select(SavatMahsuloti).where(
+            SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id
         )
     )
     new_quantity = quantity + (item.quantity if item else 0)
@@ -55,7 +55,7 @@ def add_cart_item(
             detail="So‘ralgan miqdor ombordagi qoldiqdan oshib ketdi",
         )
     if item is None:
-        db.add(CartItem(user_id=user_id, product_id=product_id, quantity=quantity))
+        db.add(SavatMahsuloti(user_id=user_id, product_id=product_id, quantity=quantity))
     else:
         item.quantity = new_quantity
     db.commit()
@@ -64,16 +64,16 @@ def add_cart_item(
 
 def update_cart_item(
     db: Session, user_id: int, product_id: int, quantity: int
-) -> CartRead:
+) -> SavatJavobi:
     """Savat qatorini qulflab, miqdorni zaxiradan oshirmasdan yangilaydi."""
     item = db.scalar(
-        select(CartItem)
-        .where(CartItem.user_id == user_id, CartItem.product_id == product_id)
+        select(SavatMahsuloti)
+        .where(SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id)
         .with_for_update()
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Savatda bunday mahsulot yo‘q")
-    product = db.get(Product, product_id)
+    product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
     if quantity > product.stock:
@@ -89,8 +89,8 @@ def update_cart_item(
 def remove_cart_item(db: Session, user_id: int, product_id: int) -> None:
     """Savat qatorini egasini tekshirib o‘chiradi."""
     item = db.scalar(
-        select(CartItem)
-        .where(CartItem.user_id == user_id, CartItem.product_id == product_id)
+        select(SavatMahsuloti)
+        .where(SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id)
         .with_for_update()
     )
     if item is None:
@@ -99,14 +99,14 @@ def remove_cart_item(db: Session, user_id: int, product_id: int) -> None:
     db.commit()
 
 
-def checkout(db: Session, user_id: int) -> Order:
+def checkout(db: Session, user_id: int) -> Buyurtma:
     """Buyurtma, narx nusxasi, zaxira va savatni bitta tranzaksiyada boshqaradi."""
     cart_rows = list(
         db.execute(
-            select(CartItem, Product)
-            .join(Product, Product.id == CartItem.product_id)
-            .where(CartItem.user_id == user_id)
-            .order_by(Product.id)
+            select(SavatMahsuloti, Mahsulot)
+            .join(Mahsulot, Mahsulot.id == SavatMahsuloti.product_id)
+            .where(SavatMahsuloti.user_id == user_id)
+            .order_by(Mahsulot.id)
             .with_for_update()
         )
     )
@@ -119,15 +119,15 @@ def checkout(db: Session, user_id: int) -> Order:
         (product.price * cart_item.quantity for cart_item, product in cart_rows),
         start=Decimal("0.00"),
     )
-    order = Order(user_id=user_id, total_amount=total)
+    order = Buyurtma(user_id=user_id, total_amount=total)
     db.add(order)
     db.flush()
 
     for cart_item, product in cart_rows:
         result = db.execute(
-            update(Product)
-            .where(Product.id == product.id, Product.stock >= cart_item.quantity)
-            .values(stock=Product.stock - cart_item.quantity)
+            update(Mahsulot)
+            .where(Mahsulot.id == product.id, Mahsulot.stock >= cart_item.quantity)
+            .values(stock=Mahsulot.stock - cart_item.quantity)
         )
         if result.rowcount != 1:
             db.rollback()
@@ -136,7 +136,7 @@ def checkout(db: Session, user_id: int) -> Order:
                 detail=f"{product.id}-mahsulot uchun omborda yetarli qoldiq yo‘q",
             )
         db.add(
-            OrderItem(
+            BuyurtmaMahsuloti(
                 order_id=order.id,
                 product_id=product.id,
                 product_name=product.name,
@@ -149,7 +149,7 @@ def checkout(db: Session, user_id: int) -> Order:
     order_id = order.id
     db.commit()
     completed_order = db.scalar(
-        select(Order).options(selectinload(Order.items)).where(Order.id == order_id)
+        select(Buyurtma).options(selectinload(Buyurtma.items)).where(Buyurtma.id == order_id)
     )
     if completed_order is None:
         raise RuntimeError("Saqlangan buyurtmani qayta o‘qib bo‘lmadi")
