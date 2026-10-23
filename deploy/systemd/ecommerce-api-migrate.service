@@ -1,0 +1,13 @@
+[Unit]
+Description=Apply e-commerce database migrations
+After=network.target
+
+[Service]
+Type=oneshot
+User=ecommerce
+Group=www-data
+WorkingDirectory=/opt/ecommerce-api
+EnvironmentFile=/etc/ecommerce-api.env
+ExecStart=/opt/ecommerce-api/.venv/bin/alembic upgrade head
+NoNewPrivileges=true
+PrivateTmp=true

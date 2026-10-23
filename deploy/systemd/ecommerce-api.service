@@ -1,0 +1,17 @@
+[Unit]
+Description=E-commerce FastAPI application
+After=network.target
+
+[Service]
+User=ecommerce
+Group=www-data
+WorkingDirectory=/opt/ecommerce-api
+EnvironmentFile=/etc/ecommerce-api.env
+ExecStart=/opt/ecommerce-api/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
