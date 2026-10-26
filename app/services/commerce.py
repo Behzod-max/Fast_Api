@@ -12,6 +12,23 @@ from app.schemas.cart import SavatJavobi, SavatQatori
 from app.schemas.product import MahsulotJavobi
 
 
+def _get_cart_item(
+    db: Session, user_id: int, product_id: int, *, lock: bool = False
+) -> SavatMahsuloti | None:
+    query = select(SavatMahsuloti).where(
+        SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id
+    )
+    return db.scalar(query.with_for_update() if lock else query)
+
+
+def _check_stock(stock: int, quantity: int) -> None:
+    if quantity > stock:
+        raise HTTPException(
+            status_code=409,
+            detail="So‘ralgan miqdor ombordagi qoldiqdan oshib ketdi",
+        )
+
+
 def get_cart(db: Session, user_id: int) -> SavatJavobi:
     """Savat qatorlari va summasini serverda hisoblaydi."""
     rows = db.execute(
@@ -43,17 +60,9 @@ def add_cart_item(
     product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
-    item = db.scalar(
-        select(SavatMahsuloti).where(
-            SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id
-        )
-    )
+    item = _get_cart_item(db, user_id, product_id)
     new_quantity = quantity + (item.quantity if item else 0)
-    if new_quantity > product.stock:
-        raise HTTPException(
-            status_code=409,
-            detail="So‘ralgan miqdor ombordagi qoldiqdan oshib ketdi",
-        )
+    _check_stock(product.stock, new_quantity)
     if item is None:
         db.add(SavatMahsuloti(user_id=user_id, product_id=product_id, quantity=quantity))
     else:
@@ -66,21 +75,13 @@ def update_cart_item(
     db: Session, user_id: int, product_id: int, quantity: int
 ) -> SavatJavobi:
     """Savat qatorini qulflab, miqdorni zaxiradan oshirmasdan yangilaydi."""
-    item = db.scalar(
-        select(SavatMahsuloti)
-        .where(SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id)
-        .with_for_update()
-    )
+    item = _get_cart_item(db, user_id, product_id, lock=True)
     if item is None:
         raise HTTPException(status_code=404, detail="Savatda bunday mahsulot yo‘q")
     product = db.get(Mahsulot, product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
-    if quantity > product.stock:
-        raise HTTPException(
-            status_code=409,
-            detail="So‘ralgan miqdor ombordagi qoldiqdan oshib ketdi",
-        )
+    _check_stock(product.stock, quantity)
     item.quantity = quantity
     db.commit()
     return get_cart(db, user_id)
@@ -88,11 +89,7 @@ def update_cart_item(
 
 def remove_cart_item(db: Session, user_id: int, product_id: int) -> None:
     """Savat qatorini egasini tekshirib o‘chiradi."""
-    item = db.scalar(
-        select(SavatMahsuloti)
-        .where(SavatMahsuloti.user_id == user_id, SavatMahsuloti.product_id == product_id)
-        .with_for_update()
-    )
+    item = _get_cart_item(db, user_id, product_id, lock=True)
     if item is None:
         raise HTTPException(status_code=404, detail="Savatda bunday mahsulot yo‘q")
     db.delete(item)
