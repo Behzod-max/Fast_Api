@@ -8,14 +8,14 @@ from app.dependencies.auth import require_admin
 from app.models.category import Kategoriya
 from app.models.product import Mahsulot
 from app.models.user import Foydalanuvchi
-from app.schemas.category import KategoriyaJavobi, KategoriyaYaratish
+from app.schemas.category import CategoryCreate, CategoryResponse
 
 router = APIRouter(prefix="/categories", tags=["Kategoriyalar"])
 
 
-@router.post("", response_model=KategoriyaJavobi, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_category(
-    payload: KategoriyaYaratish,
+    payload: CategoryCreate,
     db: Session = Depends(get_db),
     _admin: Foydalanuvchi = Depends(require_admin),
 ) -> Kategoriya:
@@ -33,7 +33,7 @@ def create_category(
     return category
 
 
-@router.get("", response_model=list[KategoriyaJavobi])
+@router.get("", response_model=list[CategoryResponse])
 def list_categories(
     offset: int = 0, limit: int = 50, db: Session = Depends(get_db)
 ) -> list[Kategoriya]:
